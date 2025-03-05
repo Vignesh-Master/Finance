@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %} - Finance Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Navbar styling */
+        .navbar {
+            background-color: var(--card-bg);
+            padding: 10px 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            border-bottom: 1px solid #ddd; /* Original border */
+        }
+        .navbar-brand {
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: 1.5rem;
+            text-decoration: none;
+            margin-left: 10px;
+            transition: color 0.3s ease; /* Smooth transition */
+        }
+        .navbar-brand:hover {
+            color: #0056b3; /* Darker shade on hover */
+        }
+        .navbar-nav {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+        }
+        .nav-item {
+            margin-left: 20px;
+            position: relative;
+        }
+        .nav-link {
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 1rem;
+            padding: 5px 10px;
+            transition: color 0.3s ease, text-decoration 0.3s ease, background-color 0.3s ease;
+            border-radius: 3px; /* Original subtle rounding */
+        }
+        .nav-link:hover {
+            color: #00b4d8; /* Lighter blue on hover */
+            text-decoration: none;
+            background-color: rgba(0, 180, 216, 0.1); /* Subtle hover background */
+        }
+        .nav-link.active {
+            color: #007bff; /* Highlight color for active item */
+            text-decoration: underline;
+            font-weight: bold;
+            background-color: rgba(0, 123, 255, 0.1); /* Subtle active background */
+        }
+        /* Theme variables (restored comprehensively) */
+        :root {
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --primary-color: #007bff;
+            --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --card-bg: #2c2c2c;
+            --text-color: #f8f9fa;
+            --primary-color: #00b4d8;
+            --shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            line-height: 1.6; /* Original line height */
+        }
+        .content {
+            padding-top: 70px; /* Adjust for fixed navbar */
+            min-height: calc(100vh - 70px); /* Ensure content fills page */
+            padding: 20px; /* Original padding */
+        }
+        /* Alert styling (restored) */
+        .alert {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .alert-custom-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert-custom-info {
+            background-color: #cce5ff;
+            color: #004085;
+            border: 1px solid #b8daff;
+        }
+        .alert-custom-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        /* Debug styling to verify styles */
+        .debug {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 5px;
+            font-size: 12px;
+            z-index: 2000;
+            display: none; /* Hidden by default */
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="{{ url_for('home') }}" class="navbar-brand">Finance Tracker</a>
+        <ul class="navbar-nav">
+            {% if not current_user.is_authenticated %}
+                <li class="nav-item"><a href="{{ url_for('login') }}" class="nav-link {% if request.endpoint == 'login' %}active{% endif %}">Login</a></li>
+                <li class="nav-item"><a href="{{ url_for('signup') }}" class="nav-link {% if request.endpoint == 'signup' %}active{% endif %}">Signup</a></li>
+            {% else %}
+                <li class="nav-item"><a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">Dashboard</a></li>
+                <li class="nav-item"><a href="{{ url_for('profile') }}" class="nav-link {% if request.endpoint == 'profile' %}active{% endif %}">Profile</a></li>
+                <li class="nav-item"><a href="{{ url_for('add_expense') }}" class="nav-link {% if request.endpoint == 'add_expense' %}active{% endif %}">Add Expense</a></li>
+                <li class="nav-item"><a href="{{ url_for('add_goal') }}" class="nav-link {% if request.endpoint == 'add_goal' %}active{% endif %}">Add Goal</a></li>
+                <li class="nav-item"><a href="{{ url_for('logout') }}" class="nav-link {% if request.endpoint == 'logout' %}active{% endif %}">Logout</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    <div class="content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert {% if category == 'custom-success' %}alert-custom-success{% elif category == 'custom-info' %}alert-custom-info{% elif category == 'custom-danger' %}alert-custom-danger{% endif %}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </div>
+    <div class="debug" id="debug">Styles Loaded</div> <!-- Debug element -->
+    <script>
+        // Debug script to verify styles
+        window.addEventListener('load', function() {
+            const debugDiv = document.getElementById('debug');
+            if (debugDiv) {
+                debugDiv.style.display = 'block';
+                console.log('Navbar styles loaded:', {
+                    hoverColor: window.getComputedStyle(document.querySelector('.nav-link:hover')).color,
+                    activeColor: window.getComputedStyle(document.querySelector('.nav-link.active')).color,
+                    defaultColor: window.getComputedStyle(document.querySelector('.nav-link')).color
+                });
+            }
+
+            // Enhanced placeholder behavior (if needed elsewhere)
+            document.querySelectorAll('input[placeholder]').forEach(input => {
+                input.addEventListener('focus', function() {
+                    if (this.value === '') {
+                        this.placeholder = '';
+                        this.classList.add('focused');
+                    }
+                });
+                input.addEventListener('blur', function() {
+                    if (!this.value) {
+                        if (this.name === 'name') this.placeholder = 'John Doe';
+                        else if (this.name === 'phone_number') this.placeholder = 'Enter phone number';
+                        this.classList.remove('focused');
+                    }
+                });
+            });
+
+            // Flash verification status on successful verification (if needed elsewhere)
+            const flashMessage = '{{ get_flashed_messages()[-1] if get_flashed_messages() else "" }}';
+            if (flashMessage.includes('verified successfully')) {
+                const statusDiv = document.getElementById('verification-status');
+                if (statusDiv) {
+                    statusDiv.classList.add('flash');
+                    setTimeout(() => statusDiv.classList.remove('flash'), 1000);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

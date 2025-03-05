@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Verify Phone OTP{% endblock %}
+{% block content %}
+    <div class="d-flex flex-column justify-content-center align-items-center vh-100" style="margin-top: -56px; padding-top: 56px; background-color: var(--bg-color);">
+        <div class="text-center p-5" style="max-width: 400px; background-color: var(--card-bg); border-radius: 15px; box-shadow: var(--shadow);">
+            <h2 style="color: var(--primary-color);">Verify Phone Number</h2>
+            <p style="color: var(--text-color);">Please solve the CAPTCHA to verify your phone number.</p>
+            {% if num1 is not none and num2 is not none %}
+                <p style="color: var(--text-color); font-weight: bold; margin-bottom: 10px;">What is {{ num1 }} + {{ num2 }}?</p>
+            {% else %}
+                <p style="color: var(--text-color);">No CAPTCHA available. Please request verification again.</p>
+            {% endif %}
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label" style="color: var(--text-color);">Enter Answer</label>
+                    <input type="text" name="captcha_answer" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 py-2">Verify</button>
+                <p style="color: var(--text-color); margin-top: 10px;">Time remaining: {{ time_remaining }} seconds</p>
+                <a href="{{ url_for('profile') }}" style="color: var(--primary-color); margin-top: 10px; display: block;">Back to Profile</a>
+            </form>
+        </div>
+    </div>
+{% endblock %}
